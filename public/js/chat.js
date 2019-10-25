@@ -26,7 +26,7 @@ message.addEventListener("keyup", function (event) {
 
 //Register User.
 save.addEventListener('click', () => {
-    user = new User(uuidv4(), uName.value, langSelect.value, 'online', '');
+    user = new User(uuidv4(), uName.value ? uName.value : 'Nemo', langSelect.value, 'online', '');
     uName.setAttribute('readonly', '');
     langSelect.setAttribute('readonly', '');
     save.style = 'display:none';
@@ -49,7 +49,7 @@ message.addEventListener('keypress', () => {
 //listen for events
 socket.on('online', (data) => {
     console.log(data);
-    onlineList.innerHTML='';
+    onlineList.innerHTML = '';
     data.forEach(index => {
         var node = document.createElement("LI");
         node.id = index.socketId;
@@ -60,7 +60,7 @@ socket.on('online', (data) => {
 });
 
 socket.on('userOffline', (data) => {
-    onlineList.innerHTML='';
+    onlineList.innerHTML = '';
     data.forEach(index => {
         var node = document.createElement("LI");
         node.id = index.socketId;
@@ -80,34 +80,36 @@ socket.on('userOffline', (data) => {
 
 
 socket.on('chat', (data) => {
-    translateMessageGet2(data.message, { 'from': data.user.lang, 'to': user.lang }).then(result => {
-        feedback.innerHTML = "";
+    feedback.innerHTML = "";
+    if (user != "") {
         if (data.user.id === user.id) {
             output.innerHTML += `
-                <div id="uName" align="right">
-                    <div id="name">${user.name}</div>
-                    <div id="translate" style="background-color:#d0ffea; margin-right: 35px;">${data.message}</div>
-                </div>`;
-        } else {
-            output.innerHTML += `
-            <div id="uName">
-                <div id="name">${data.user.name}</div>
-                <div id="translate">${result}</div>
-                <div id="original">
-                    <strong>${data.user.lang}: </strong>    
-                ${data.message}</div>
+            <div id="uName" align="right">
+            <div id="name">${user.name}</div>
+            <div id="translate" style="background-color:#d0ffea; margin-right: 35px;">${data.message}</div>
             </div>`;
+        } else {
+            if(data.user.lang === user.lang){
+                output.innerHTML += `
+                <div id="uName">
+                <div id="name">${data.user.name}</div>
+                <div id="translate">${data.message}</div>
+                </div>`;
+            } else{
+                translateMessageGet2(data.message, { 'from': data.user.lang, 'to': user.lang }).then(result => {
+                    output.innerHTML += `
+                    <div id="uName">
+                    <div id="name">${data.user.name}</div>
+                    <div id="translate">${result}</div>
+                    <div id="original">
+                    <strong>${data.user.lang}: </strong>    
+                    ${data.message}</div>
+                    </div>`;
+                });
+            }
         }
-        /*         data.message = result;
-                feedback.innerHTML = "";
-                output.innerHTML += '<p><strong>'
-                    + data.user.name
-                    + ':</strong>'
-                    + data.message
-                    + '</p>';
-         */
         chatDiv.scrollTop = chatDiv.scrollHeight;
-    });
+    }
 });
 
 

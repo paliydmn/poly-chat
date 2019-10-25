@@ -47,7 +47,9 @@ io.on('connection', (socket) => {
     socket.on('online', (data) => {
         data.socketId = socket.id;
         userList.push(data);
-        socket.broadcast.emit('online', userList);
+        console.log(`ONLINE USER LIST: ${userList}`);
+
+        io.sockets.emit('online', userList);
         console.log("ONLINE " + socket.id);
     }); 
       
@@ -56,6 +58,7 @@ io.on('connection', (socket) => {
             return obj.socketId !== socket.id;
         });
         
+        console.log(`USER LIST: ${userList}`);
         io.sockets.emit('userOffline', userList );
 
         console.log("OFFLINE " + socket.id);
