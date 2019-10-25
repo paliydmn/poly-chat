@@ -13,9 +13,15 @@ let server = app.listen(4000, () => {
 
 //Static files
 app.use(express.static('public'));
+//app.use(express.static('/public/img/*'));
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/view/index.html');
 });
+
+//
+let userList = new Array();
+
+
 //setup socket
 let io = socket(server);
 io.on('connection', (socket) => {
@@ -39,9 +45,27 @@ io.on('connection', (socket) => {
     });
     
     socket.on('online', (data) => {
-        socket.broadcast.emit('online', data);
-    });
+        data.socketId = socket.id;
+        userList.push(data);
+        socket.broadcast.emit('online', userList);
+        console.log("ONLINE " + socket.id);
+    }); 
+      
+    socket.on('disconnect', (data) => {
+        userList = userList.filter(function( obj ) {
+            return obj.socketId !== socket.id;
+        });
+        
+        io.sockets.emit('userOffline', userList );
+
+        console.log("OFFLINE " + socket.id);
+    }); 
+
 });
+
+
+
+
 function translateMessageGet(message, langPair) {
     return new Promise((resolve, reject) => {
         let from = langPair.from;

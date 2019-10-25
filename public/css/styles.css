@@ -77,6 +77,22 @@ input{
     font-size: 16px;
 }
 
+.send{
+    float: right;
+    margin: 0px 10px 14px 0px;
+}
+ul {
+    list-style: none;
+  }
+  
+  ul li::before {
+    content: "\2022";
+    color: #07e634;
+    font-weight: bold;
+    display: inline-block; 
+    width: 1em;
+    margin-left: -1em;
+  }
 /* input#handle{
     position: absolute;
     bottom: -35px;
@@ -120,17 +136,54 @@ table {
   }
   
   td, th {
-    border: 1px solid #dddddd;
+    border: 1px solid #ffffff;
     text-align: left;
     padding: 8px;
   }
   
   tr:nth-child(even) {
-    background-color: #dddddd;
+    background-color: #e2ecee;
   }
   tbody {
     vertical-align: top;
 }
 tr {
     height: fit-content;
+}
+
+
+div#name {
+    color: #575ed8;
+    font-weight: bold;
+    margin: 5px;
+    font-size: 16px;
+}
+
+div#translate {
+    /* border: 1px solid greenyellow; */
+    border-radius: 5px;
+    background-color: #ccf0fd;
+    padding: 5px 10px 5px 10px;
+    max-width: fit-content;
+    margin: 5px 10px 0px 35px;
+    font-weight: 500;
+    color: black;
+    flex-wrap: wrap;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+div#original {
+    /* border: 1px solid greenyellow; */
+    border-radius: 5px;
+    background-color: #eee;
+    padding: 4px 4px 4px 4px;
+    max-width: fit-content;
+    margin: 5px 40px 5px 10px;
+    font-weight: 500;
+    font-size: 12px;
+    /* display: flex; */
+    flex-wrap: wrap;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
 }
