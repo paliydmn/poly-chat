@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
+    <link href="/css/styles.css" rel="stylesheet">
+
+</head>
+
+<body>
+    <table>
+        <tr>
+            <th>User</th>
+            <th>Chat</th>
+            <th>Online</th>
+        </tr>
+        <tr>
+            <td>
+                <div id="nickname">
+                    <input id="uName" type="text" placeholder="Nickname">
+                    <select id="language">
+                        <option value="en">En</option>
+                        <option value="ukr">Ukr</option>
+                        <option value="ru">Ru</option>
+                    </select>
+                    <div id="save">Save</div>
+                </div>
+            </td>
+            <td>
+                <div id="chat">
+                    <div id="chat-window">
+                        <div id="output"></div>
+                        <div id="feedback"></div>
+                        <div id="mess-send">
+                            <textarea id="message" rows="3" type="text" disabled="disabled"
+                                placeholder="Message"></textarea>
+                            <div>
+                                <button id="send" disabled="disabled">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div id="onlineList">
+                    <ul>
+                        <li>Test User Name</li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+
+    </table>
+
+    <script src="/js/chat.js"></script>
+</body>
+
+</html>
