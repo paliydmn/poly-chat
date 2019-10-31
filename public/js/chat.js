@@ -50,25 +50,26 @@ message.addEventListener('keypress', () => {
 socket.on('online', (data) => {
     console.log(data);
     onlineList.innerHTML = '';
-    data.forEach(index => {
-        var node = document.createElement("LI");
-        node.id = index.socketId;
-        var textnode = document.createTextNode(index.name);
-        node.appendChild(textnode);
-        onlineList.appendChild(node);
+    data.forEach(user => {
+        listUsers(user);
+
     });
 });
 
 socket.on('userOffline', (data) => {
     onlineList.innerHTML = '';
-    data.forEach(index => {
-        var node = document.createElement("LI");
-        node.id = index.socketId;
-        var textnode = document.createTextNode(index.name);
-        node.appendChild(textnode);
-        onlineList.appendChild(node);
+    data.forEach(user => {
+        listUsers(user);
     });
 });
+
+function listUsers(user) {
+    var node = document.createElement("LI");
+    node.id = user.socketId;
+    var textnode = document.createTextNode(`${user.lang} / ${user.name}`);
+    node.appendChild(textnode);
+    onlineList.appendChild(node);
+}
 
 
 /* socket.on('typing', (data) => {
@@ -77,6 +78,13 @@ socket.on('userOffline', (data) => {
 });
  */
 
+Date.prototype.timeNow = function () {
+    return ((this.getHours() < 10) ? "0" : "") + this.getHours() + ":" + ((this.getMinutes() < 10) ? "0" : "") + this.getMinutes() + ":" + ((this.getSeconds() < 10) ? "0" : "") + this.getSeconds();
+}
+function getTime() {
+    var now = new Date();
+    return now.timeNow();
+}
 
 
 socket.on('chat', (data) => {
@@ -86,21 +94,27 @@ socket.on('chat', (data) => {
             output.innerHTML += `
             <div id="uName" align="right">
             <div id="name">${user.name}</div>
-            <div id="translate" style="background-color:#d0ffea; margin-right: 35px;">${data.message}</div>
+            <div id="translate" style="background-color:#d0ffea; margin-right: 35px;">${data.message}
+            <p>${getTime()}</p>
+            </div>
             </div>`;
         } else {
-            if(data.user.lang === user.lang){
+            if (data.user.lang === user.lang) {
                 output.innerHTML += `
                 <div id="uName">
                 <div id="name">${data.user.name}</div>
-                <div id="translate">${data.message}</div>
+                <div id="translate">${data.message}
+                <p>${getTime()}</p>
+                </div>
                 </div>`;
-            } else{
+            } else {
                 translateMessageGet2(data.message, { 'from': data.user.lang, 'to': user.lang }).then(result => {
                     output.innerHTML += `
                     <div id="uName">
                     <div id="name">${data.user.name}</div>
-                    <div id="translate">${result}</div>
+                    <div id="translate">${result}
+                    <p>${getTime()}</p>
+                    </div>
                     <div id="original">
                     <strong>${data.user.lang}: </strong>    
                     ${data.message}</div>
@@ -108,7 +122,7 @@ socket.on('chat', (data) => {
                 });
             }
         }
-        chatDiv.scrollTop = chatDiv.scrollHeight;
+        chatDiv.scrollTop = chatDiv.scrollHeight + 100;
     }
 });
 
