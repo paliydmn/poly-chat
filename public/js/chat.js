@@ -80,7 +80,8 @@ function listUsers(user) {
 
 Date.prototype.timeNow = function () {
     return ((this.getHours() < 10) ? "0" : "") + this.getHours() + ":" + ((this.getMinutes() < 10) ? "0" : "") + this.getMinutes() + ":" + ((this.getSeconds() < 10) ? "0" : "") + this.getSeconds();
-}
+};
+
 function getTime() {
     var now = new Date();
     return now.timeNow();
@@ -108,7 +109,7 @@ socket.on('chat', (data) => {
                 </div>
                 </div>`;
             } else {
-                translateMessageGet2(data.message, { 'from': data.user.lang, 'to': user.lang }).then(result => {
+                httpGetTranslateAsync(data.message, { 'from': data.user.lang, 'to': user.lang }, function(result){
                     output.innerHTML += `
                     <div id="uName">
                     <div id="name">${data.user.name}</div>
@@ -119,7 +120,21 @@ socket.on('chat', (data) => {
                     <strong>${data.user.lang}: </strong>    
                     ${data.message}</div>
                     </div>`;
+                    chatDiv.scrollTop = chatDiv.scrollHeight + 100;
                 });
+               /*  translateMessageGet(data.message, { 'from': data.user.lang, 'to': user.lang }).then(result => {
+                    output.innerHTML += `
+                    <div id="uName">
+                    <div id="name">${data.user.name}</div>
+                    <div id="translate">${result}
+                    <p>${getTime()}</p>
+                    </div>
+                    <div id="original">
+                    <strong>${data.user.lang}: </strong>    
+                    ${data.message}</div>
+                    </div>`;
+                    chatDiv.scrollTop = chatDiv.scrollHeight + 100;
+                }); */
             }
         }
         chatDiv.scrollTop = chatDiv.scrollHeight + 100;
@@ -153,34 +168,25 @@ function uuidv4() {
     );
 }
 
-function translateMessageGet(message, langPair) {
-    return new Promise((resolve, reject) => {
-        let from = langPair.from;
-        let to = user.lang;
-        if (from === to) {
-            resolve(message);
-        } else {
-            let urlTr = `https://api.mymemory.translated.net/get?q=${message}&langpair=${from}|${to}`;
+function httpGetTranslateAsync(message, langPair, callback) {
+    let from = langPair.from;
+    let to = langPair.to;
+    let urlTr = `https://api.mymemory.translated.net/get?q=${message}&langpair=${from}|${to}`;
+    if (from === to) {
+        callback(message);
+    } else {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                callback(JSON.parse(xmlHttp.responseText).responseData.translatedText);
+        };
 
-            https.get(urlTr, (resp) => {
-                let data = '';
-                // A chunk of data has been recieved.
-                resp.on('data', (chunk) => {
-                    data += chunk;
-                });
-                // The whole response has been received. Print out the result.
-                resp.on('end', () => {
-                    console.log(JSON.stringify(data));
-                    resolve(JSON.parse(data).responseData.translatedText);
-                });
-            }).on("error", (err) => {
-                console.log("Error: " + err.message);
-                reject(`Translation error: ${message}`);
-            });
-        }
-    });
+        xmlHttp.open("GET", urlTr, true); // true for asynchronous 
+        xmlHttp.send(null);
+    }
 }
-function translateMessageGet2(message, langPair) {
+
+function translateMessageGet(message, langPair) {
     return new Promise((resolve, reject) => {
         let from = langPair.from;
         let to = langPair.to;
