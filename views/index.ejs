@@ -12,6 +12,26 @@
 </head>
 
 <body>
+    <div>
+        <%= chatId%>
+    </div>
+    <div id="notification"></div>
+    <script>
+
+        var id = '<%- chatId %>';
+        if (window.localStorage.getItem('chat') == null) {
+            window.localStorage.setItem('chatId', id);
+        } else {
+            let data = JSON.parse(window.localStorage.getItem('chat'));
+            if (data.chatId == id) {
+                window.localStorage.removeItem('chatId');
+            } else {
+                window.localStorage.removeItem('chat');
+                window.localStorage.setItem('chatId', id);
+            }
+        }
+
+    </script>
     <table>
         <tr>
             <th>User</th>
@@ -40,6 +60,10 @@
                         <div id="output"></div>
                         <div id="feedback"></div>
                         <div id="mess-send">
+<!--                             <textarea id="message" rows="3" type="text" placeholder="Message"></textarea>
+                            <div class="send" id="send">
+                                <img src="/img/send.png" alt="Submit" width="32" height="32">
+                            </div> -->
                             <textarea id="message" rows="3" type="text" disabled="disabled"
                                 placeholder="Message"></textarea>
                             <div class="send" id="send">
