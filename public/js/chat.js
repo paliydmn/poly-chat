@@ -1,5 +1,5 @@
 // Make connection here
-let socket = io.connect('http://localhost:4000');
+let socket = io.connect('http://10.0.0.7:4000');
 
 // DOM
 let notif = document.getElementById('notification');
@@ -17,9 +17,13 @@ let onlineList = document.getElementById('listOnline');
 
 let localUser = '';
 
+let online = '';
+let typing = '';
+let chat = '';
+
+
 function startChat() {
     if (window.localStorage.length != 0) {
-       // let localUser = "";
         let chatId = window.localStorage.getItem('chatId');
         let chat = window.localStorage.getItem('chat');
         if (chat) {
@@ -29,16 +33,28 @@ function startChat() {
             let arr = document.getElementById('nickname').childNodes;
             arr.forEach(a => { try{a.setAttribute("disabled","disabled");} catch(err){}});
             save.style.display = 'none';
-            socket.emit('online', {
+            
+            setListeners(chatId);
+
+            console.log(`Emit New Listener: ${online}`);
+
+            socket.emit(online, {
                 chatId: chatId,
                 user: localUser
             });
         } else {
+            setListeners(chatId);
             notif.innerHTML = "Enter Nikname and select Language, Please.";
         }
     }
 }
 startChat();
+
+function setListeners(id) {
+    online = `online_${id}`;
+    typing = `typing_${id}`;
+    chat = `chat_${id}`;
+}
 
 save.addEventListener('click', () => {
     user = new User(uuidv4(), uName.value ? uName.value : 'Nemo', langSelect.value, 'online', '');
@@ -49,81 +65,48 @@ save.addEventListener('click', () => {
     btn.removeAttribute('disabled');
  
     localUser = user;
-    socket.emit('online', {
-        chatId: window.localStorage.getItem('chatId'),
+
+    let chatId = window.localStorage.getItem('chatId');
+    window.localStorage.removeItem('chatId');
+    window.localStorage.setItem("chat",JSON.stringify({'chatId':chatId, 'user':localUser}));
+    console.log(`Emit New Listener: ${online}`);
+
+    socket.emit(online, {
+        chatId: chatId,
         user: localUser
     });
 
 });
 
+message.addEventListener('keypress', () => {
+    socket.emit(typing, uName.value);
+});
 
-// //emit event
-// message.addEventListener("keyup", function (event) {
-//     if (event.key === "Enter") {
-//         emitChat();
-//         message.value = "";
-//         // uName.setAttribute('readonly', '');
-//     }
-// });
 
-// //Register User.
-// save.addEventListener('click', () => {
-//     user = new User(uuidv4(), uName.value ? uName.value : 'Nemo', langSelect.value, 'online', '');
-//     uName.setAttribute('readonly', '');
-//     langSelect.setAttribute('readonly', '');
-//     save.style = 'display:none';
-//     message.removeAttribute('disabled');
-//     btn.removeAttribute('disabled');
+//emit event
+message.addEventListener("keyup", function (event) {
+    if (event.key === "Enter") {
+        emitChat();
+        message.value = "";
+    }
+});
 
-//     socket.emit('online', user);
-// });
-
-// btn.addEventListener('click', () => {
-//     emitChat();
-//     message.value = "";
-//     //uName.setAttribute('readonly', '');
-// });
-
-// message.addEventListener('keypress', () => {
-//     socket.emit('typing', uName.value);
-// });
+btn.addEventListener('click', () => {
+    emitChat();
+    message.value = "";
+});
 
 //listen for events
-socket.on('online', (data) => {
-    console.log(data);
+socket.on(online, (data) => {
+    console.log(`Listen: ${online}`);
     let item = data[0];
-    if(window.localStorage.getItem('chatId') == item[0] || JSON.parse(window.localStorage.getItem('chat')).chatId == item[0]){
+    if(JSON.parse(window.localStorage.getItem('chat')).chatId == item[0]){
         onlineList.innerHTML = '';
         data.forEach(user => {
             listUsers(user[1]);
         });
     }
 });
-// socket.on('newUser', (data) => {
-//     socket.emit('online', data);
-//     user = data;
-//     console.log(data);
-//     /*  onlineList.innerHTML = '';
-//      data.forEach(user => {
-//          listUsers(user);
-//      }); */
-// });
-// socket.on('start', (data) => {
-
-//     //socket.emit('start', data);
-//     listUsers(data.user);
-//     /* data.userList.forEach(u => {
-//     });
-//     user = data; */
-//     console.log(data);
-// });
-
-// socket.on('userOffline', (data) => {
-//     onlineList.innerHTML = '';
-//     data.forEach(user => {
-//         listUsers(user);
-//     });
-// });
 
 function listUsers(user) {
     var node = document.createElement("LI");
@@ -136,126 +119,67 @@ function listUsers(user) {
     btn.removeAttribute('disabled');
 }
 
+socket.on(typing, (data) => {
+    feedback.innerHTML = '<p><em>' + data + ' is typing a message ...</em></p>';
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+});
 
-// /* socket.on('typing', (data) => {
-//     feedback.innerHTML = '<p><em>' + data + ' is typing a message ...</em></p>';
-//     chatDiv.scrollTop = chatDiv.scrollHeight;
-// });
-//  */
+Date.prototype.timeNow = function () {
+    return ((this.getHours() < 10) ? "0" : "") + this.getHours() + ":" + ((this.getMinutes() < 10) ? "0" : "") + this.getMinutes() + ":" + ((this.getSeconds() < 10) ? "0" : "") + this.getSeconds();
+};
 
-// Date.prototype.timeNow = function () {
-//     return ((this.getHours() < 10) ? "0" : "") + this.getHours() + ":" + ((this.getMinutes() < 10) ? "0" : "") + this.getMinutes() + ":" + ((this.getSeconds() < 10) ? "0" : "") + this.getSeconds();
-// };
+function getTime() {
+    var now = new Date();
+    return now.timeNow();
+}
 
-// function getTime() {
-//     var now = new Date();
-//     return now.timeNow();
-// }
+socket.on(chat, (data) => {
+    feedback.innerHTML = "";
+    if (localUser != "") {
+        if (data.user.id === localUser.id) {
+            output.innerHTML += `
+            <div id="uName" align="right">
+            <div id="name">${localUser.name}</div>
+            <div id="translate" style="background-color:#d0ffea; margin-right: 35px;">${data.message}
+            <p>${getTime()}</p>
+            </div>
+            </div>`;
+        } else {
+            if (data.user.lang === localUser.lang) {
+                output.innerHTML += `
+                <div id="uName">
+                <div id="name">${data.user.name}</div>
+                <div id="translate">${data.message}
+                <p>${getTime()}</p>
+                </div>
+                </div>`;
+            } else {
+                httpGetTranslateAsync(data.message, { 'from': data.user.lang, 'to': localUser.lang }, function (result) {
+                    output.innerHTML += `
+                    <div id="uName">
+                    <div id="name">${data.user.name}</div>
+                    <div id="translate">${result}
+                    <p>${getTime()}</p>
+                    </div>
+                    <div id="original">
+                    <strong>${data.user.lang}: </strong>    
+                    ${data.message}</div>
+                    </div>`;
+                    chatDiv.scrollTop = chatDiv.scrollHeight + 100;
+                });
+            }
+        }
+        chatDiv.scrollTop = chatDiv.scrollHeight + 100;
+    }
+});
 
+let emitChat = function () {
+    socket.emit(chat, {
+        message: message.value,
+        user: localUser
+    });
+};
 
-// socket.on('chat', (data) => {
-//     feedback.innerHTML = "";
-//     if (user != "") {
-//         if (data.user.id === user.id) {
-//             output.innerHTML += `
-//             <div id="uName" align="right">
-//             <div id="name">${user.name}</div>
-//             <div id="translate" style="background-color:#d0ffea; margin-right: 35px;">${data.message}
-//             <p>${getTime()}</p>
-//             </div>
-//             </div>`;
-//         } else {
-//             if (data.user.lang === user.lang) {
-//                 output.innerHTML += `
-//                 <div id="uName">
-//                 <div id="name">${data.user.name}</div>
-//                 <div id="translate">${data.message}
-//                 <p>${getTime()}</p>
-//                 </div>
-//                 </div>`;
-//             } else {
-//                 httpGetTranslateAsync(data.message, { 'from': data.user.lang, 'to': user.lang }, function (result) {
-//                     output.innerHTML += `
-//                     <div id="uName">
-//                     <div id="name">${data.user.name}</div>
-//                     <div id="translate">${result}
-//                     <p>${getTime()}</p>
-//                     </div>
-//                     <div id="original">
-//                     <strong>${data.user.lang}: </strong>    
-//                     ${data.message}</div>
-//                     </div>`;
-//                     chatDiv.scrollTop = chatDiv.scrollHeight + 100;
-//                 });
-//                 /*  translateMessageGet(data.message, { 'from': data.user.lang, 'to': user.lang }).then(result => {
-//                      output.innerHTML += `
-//                      <div id="uName">
-//                      <div id="name">${data.user.name}</div>
-//                      <div id="translate">${result}
-//                      <p>${getTime()}</p>
-//                      </div>
-//                      <div id="original">
-//                      <strong>${data.user.lang}: </strong>    
-//                      ${data.message}</div>
-//                      </div>`;
-//                      chatDiv.scrollTop = chatDiv.scrollHeight + 100;
-//                  }); */
-//             }
-//         }
-//         chatDiv.scrollTop = chatDiv.scrollHeight + 100;
-//     }
-// });
-
-
-// socket.on('typing', (data) => {
-//     feedback.innerHTML = '<p><em>' + data + ' is typing a message ...</em></p>';
-//     chatDiv.scrollTop = chatDiv.scrollHeight;
-// });
-
-// let emitChat = function () {
-//     socket.emit('chat', {
-//         message: message.value,
-//         user: user
-//     });
-// };
-
-// function startCh() {
-//     if (window.localStorage.length != 0) {
-//         let localUser = "";
-//         let chatId = window.localStorage.getItem('chatId');
-//         let chat = window.localStorage.getItem('chat');
-//         if (chat) {
-//             let data = JSON.parse(chat);
-//             chatId = data.chatId;
-//             localUser = data.user;
-//             user = localUser;
-//             socket.emit('start', {
-//                 chatId: chatId,
-//                 user: localUser
-//             });
-//         } else {
-//             notif.innerHTML = "Enter Nikname and select Language, Please.";
-//         }
-//     }
-// }
-// //Register User.
-// save.addEventListener('click', () => {
-//     user = new User(uuidv4(), uName.value ? uName.value : 'Nemo', langSelect.value, 'online', '');
-//     uName.setAttribute('readonly', '');
-//     langSelect.setAttribute('readonly', '');
-//     save.style = 'display:none';
-//     message.removeAttribute('disabled');
-//     btn.removeAttribute('disabled');
-
-//     let chatId = window.localStorage.getItem('chatId');
-
-//     socket.emit('start', {
-//         chatId: chatId,
-//         user: user
-//     });
-// });
-
-// startCh();
 function User(id, name, lang, status, socketId) {
     this.id = id;
     this.name = name;
@@ -270,38 +194,20 @@ function uuidv4() {
     );
 }
 
-// function httpGetTranslateAsync(message, langPair, callback) {
-//     let from = langPair.from;
-//     let to = langPair.to;
-//     let urlTr = `https://api.mymemory.translated.net/get?q=${message}&langpair=${from}|${to}`;
-//     if (from === to) {
-//         callback(message);
-//     } else {
-//         var xmlHttp = new XMLHttpRequest();
-//         xmlHttp.onreadystatechange = function () {
-//             if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-//                 callback(JSON.parse(xmlHttp.responseText).responseData.translatedText);
-//         };
+function httpGetTranslateAsync(message, langPair, callback) {
+    let from = langPair.from;
+    let to = langPair.to;
+    let urlTr = `https://api.mymemory.translated.net/get?q=${message}&langpair=${from}|${to}`;
+    if (from === to) {
+        callback(message);
+    } else {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.onreadystatechange = function () {
+            if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                callback(JSON.parse(xmlHttp.responseText).responseData.translatedText);
+        };
 
-//         xmlHttp.open("GET", urlTr, true); // true for asynchronous 
-//         xmlHttp.send(null);
-//     }
-// }
-
-// function translateMessageGet(message, langPair) {
-//     return new Promise((resolve, reject) => {
-//         let from = langPair.from;
-//         let to = langPair.to;
-//         if (from === to) {
-//             resolve(message);
-//         } else {
-//             let urlTr = `https://api.mymemory.translated.net/get?q=${message}&langpair=${from}|${to}`;
-//             let xmlHttp = new XMLHttpRequest();
-//             xmlHttp.open("GET", urlTr, false); // false for synchronous request
-//             xmlHttp.send(null);
-//             //     return xmlHttp.responseText;
-//             resolve(JSON.parse(xmlHttp.responseText).responseData.translatedText);
-//         }
-//     });
-// }
-
+        xmlHttp.open("GET", urlTr, true); // true for asynchronous 
+        xmlHttp.send(null);
+    }
+}

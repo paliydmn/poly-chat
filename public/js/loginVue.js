@@ -29,15 +29,15 @@ var app = new Vue({
             var xhr = new XMLHttpRequest();
             xhr.addEventListener("readystatechange", function () {
                 if (this.readyState === 4) {
-                  console.log(this.responseText);
-                  window.localStorage.setItem("chat", this.responseText);
+                    console.log(this.responseText);
+                    window.localStorage.setItem("chat", this.responseText);
                 }
-              });
-            xhr.open("POST", "http://localhost:4000/chat", true);
+            });
+            xhr.open("POST", "http://10.0.0.7:4000/chat", true);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
             xhr.send(value);
 
-            this.url = `http://localhost:4000/chat?id=${this.uuid}`;
+            this.url = `http://10.0.0.7:4000/chat?id=${this.uuid}`;
             //return this.url;
         },
         varifyNick(nick) {
@@ -45,6 +45,16 @@ var app = new Vue({
             if (nick.length >= 3 && this.selected != '') {
                 this.isValid = 1;
             }
+        },
+        copyToClip() {
+            console.log("copy");
+            //            console.log(this.$refs.chatId);
+            this.$refs.chatId.select();
+            document.execCommand("copy");
+            var x = document.getElementById("snackbar");
+            x.className = "show";
+            setTimeout(function () { x.className = x.className.replace("show", ""); }, 3000);
+
         }
     },
     computed: {

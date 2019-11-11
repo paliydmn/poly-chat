@@ -20,12 +20,19 @@
             <select id="language" v-model="selected">
                 <option v-for="lang in langs" v-bind:value="lang.val">{{lang.descr}}</option>
             </select>
-            <div  v-if="isValid">
+            <div  v-if="isValid" v-show="!showUrl">
                 <div v-on:click="showUrl=!showUrl, createChat()"  id="createCh">Create</div>
             </div>
         </div>
-        <a v-show="showUrl" v-bind:href="url">Go to chat</a>
+        <br>
+        <div v-show="showUrl">
+            Chat Link to share:
+            <input v-show="showUrl" v-bind:value="url"  ref="chatId" v-on:click="copyToClip()"></a>
+            <a v-show="showUrl" v-bind:href="url">Go to chat</a>
+            <div id="snackbar" >Copied: {{url}}</div>
+        </div>
     </div>
+
 
     <script src="/js/loginVue.js"></script>
 </body>
