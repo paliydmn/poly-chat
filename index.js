@@ -60,9 +60,7 @@ app.post('/chat', urlencodeParser, function (req, res) {
         let response = `{"chatId":"${data.id}","user":${JSON.stringify(user)}}`;
         console.log(response);
         res.end(response);
-
     } catch (error) {
-
     }
 });
 
@@ -82,6 +80,7 @@ app.get('/chat', function (req, res) {
     }
 });
 
+//let history = '';
 
 //setup socket
 let io = socket(server);
@@ -90,12 +89,26 @@ io.on('connection', (socket) => {
         let item = key;
 
         let online = `online_${item}`;
+        let suspended = `suspended_${item}`;
+        let unsuspended = `unsuspended_${item}`;
         let typing = `typing_${item}`;
         let chat = `chat_${item}`;
+
+        let history = `history_${item}`;
+            
+        socket.on(history, (data) => {
+            console.log(data);
+            let uHistory = historyList.filter(function(object) {
+                return object.chatIdHis == item;
+              });
+              let uH = history + data.id;
+            io.sockets.emit(uH, uHistory);
+        });
 
         socket.on(online, (data) => {
             let id = data.chatId;
             user = data.user;
+
             if (chatsMap.has(id)) {
                 if (!chatsMap.get(id).usersMap.has(user.id)) {
                     chatsMap.get(id).usersMap.set(user.id, user);
@@ -103,6 +116,8 @@ io.on('connection', (socket) => {
                 //usersMap.set(data);
                 io.sockets.emit(online, Array.from(chatsMap.get(id).usersMap));
                 console.log(`Emit ${online}`);
+               // history = `history_${item}_${user.id}`;
+
             }
         });
 
@@ -112,9 +127,33 @@ io.on('connection', (socket) => {
 
         socket.on(chat, (data) => {
             console.log(data);
+            historyList.push({ chatIdHis: item, chatDataHis: data });
             io.sockets.emit(chat, data);
         });
 
+        /* socket.on(history, (data) => {
+            console.log(data);
+            io.sockets.emit(history, historyList);
+        }); */
+
         listenIds.set(key, true);
+
+        socket.on('suspended', data => {
+            console.log(`Offline User: ${data.user}`);
+            io.sockets.emit(suspended, {id: data.user.id});
+        });
+        socket.on('unsuspended', data => {
+            console.log(`Offline User: ${data.user}`);
+            io.sockets.emit(unsuspended, {id: data.user.id});
+        });
+
+        socket.on('disconnect', data => {
+            console.log(socket.id);
+        });
+
+
+        
     }
 });
+
+let historyList = [];

@@ -1,5 +1,6 @@
 body{
     font-family: 'Nunito';
+    width: 658px;
 }
 
 h2{
@@ -9,7 +10,7 @@ h2{
 }
 
 #nickname{
-    margin-top: 30px;
+    margin-top: 8px;
     position: relative;
     width: 115px;
 }
@@ -154,12 +155,19 @@ tr {
     height: fit-content;
 }
 
-
 div#name {
     color: #575ed8;
     font-weight: bold;
     margin: 5px;
-    font-size: 16px;
+    font-size: 12px;
+}
+
+button#history {
+    top: 308px;
+    position: relative;
+    width: auto;
+    left: auto;
+    padding: 5px;
 }
 
 div#translate {

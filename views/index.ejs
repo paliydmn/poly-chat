@@ -8,16 +8,12 @@
     <title>chat</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
     <link href="/css/styles.css" rel="stylesheet">
+    <link href="/css/controlls.css" rel="stylesheet">
 
 </head>
 
 <body>
-    <div>
-        <%= chatId%>
-    </div>
-    <div id="notification"></div>
     <script>
-
         var id = '<%- chatId %>';
         if (window.localStorage.getItem('chat') == null) {
             window.localStorage.setItem('chatId', id);
@@ -32,6 +28,10 @@
         }
 
     </script>
+    <div>
+        <%= chatId%>
+    </div>
+    <div id="notification"></div>
     <table>
         <tr>
             <th>User</th>
@@ -40,18 +40,29 @@
         </tr>
         <tr>
             <td>
-                <div id="nickname">
-                    <input id="uName" type="text" placeholder="Nickname">
-                    <select id="language" style="
+                <div id="onOff">
+                    <span id="onOffText">Off/On</span>
+
+                    <label class="switch" id="onOffToggle">
+                        <input type="checkbox" id="onOffcheckbox">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div>
+                    <div id="nickname">
+                        <input id="uName" type="text" placeholder="Nickname">
+                        <select id="language" style="
                     margin-top: 10px;
                     width: 115px;">
-                        <option value="en">English</option>
-                        <option value="ukr">Ukraine</option>
-                        <option value="ru">Russian</option>
-                        <option value="spa">Spanish</option>
-                        <option value="ita">Italian</option>
-                    </select>
-                    <div id="save">Save</div>
+                            <option value="en">English</option>
+                            <option value="ukr">Ukraine</option>
+                            <option value="ru">Russian</option>
+                            <option value="spa">Spanish</option>
+                            <option value="ita">Italian</option>
+                        </select>
+                        <div id="save">Save</div>
+                    </div>
+                    <button id="history">Load history</button>
                 </div>
             </td>
             <td>
@@ -60,7 +71,7 @@
                         <div id="output"></div>
                         <div id="feedback"></div>
                         <div id="mess-send">
-<!--                             <textarea id="message" rows="3" type="text" placeholder="Message"></textarea>
+                            <!--                             <textarea id="message" rows="3" type="text" placeholder="Message"></textarea>
                             <div class="send" id="send">
                                 <img src="/img/send.png" alt="Submit" width="32" height="32">
                             </div> -->
@@ -82,7 +93,9 @@
             </td>
         </tr>
 
+
     </table>
+
 
     <script src="/js/chat.js"></script>
 </body>
